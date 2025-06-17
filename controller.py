@@ -8,7 +8,7 @@ class Controller:
         # Basic state transition logic based on perception and distance
         if perception_output == 1 and obstacle_distance < 5:
             next_state = 'emergency brake'
-            acceleration = -2.0  # Strong deceleration
+            acceleration = -3.0  # Strong deceleration
         elif perception_output == 1 and obstacle_distance < 10:
             next_state = 'brake'
             acceleration = -1.0  # deceleration
