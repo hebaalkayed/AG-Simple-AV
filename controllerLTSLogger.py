@@ -1,4 +1,4 @@
-class LTSLogger:
+class ControllerLTSLogger:
     def __init__(self):
         self.transitions = []
         self.current_state = 'drive'  # initial assumption
@@ -9,5 +9,8 @@ class LTSLogger:
         self.current_state = next_state
 
     def print_lts(self):
+        print("=========== Controller LTS ===========")
         for (s1, a, s2) in self.transitions:
             print(f"{s1} --{a}--> {s2}")
+        print("======================================")
+
