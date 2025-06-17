@@ -1,5 +1,5 @@
 import torch
-from perception import SimplePerceptionNet
+from perception import SimplePerceptionNet, perfect_perception
 from vehicle import Vehicle
 from controller import Controller
 from controllerLTSLogger import ControllerLTSLogger
@@ -8,9 +8,21 @@ from vehicleLTSLogger import VehicleLTSLogger
 import time
 
 def run_simulation():
-    # Initialise the perception model and set to evaluation mode
-    model = SimplePerceptionNet()
-    model.eval()
+    USE_PERFECT_PERCEPTION = True
+
+    # Load model only if needed
+    if not USE_PERFECT_PERCEPTION:
+        model = SimplePerceptionNet()
+        model.eval()
+
+    # Perception function depending on config
+    def get_perception_output(obstacle_distance):
+        if USE_PERFECT_PERCEPTION:
+            return perfect_perception(obstacle_distance)
+        else:
+            dummy_input = torch.randn(1, 3, 28, 28)
+            output = model(dummy_input)
+            return output.argmax(dim=1).item()
 
     # Create vehicle instance
     vehicle = Vehicle()
@@ -24,14 +36,9 @@ def run_simulation():
 
     # Run simulation
     for step in range(15):
-        # Dummy image input for the perception network
-        dummy_input = torch.randn(1, 3, 28, 28)
-        output = model(dummy_input)
-        perception_output = output.argmax(dim=1).item()
-        # print(f"Perception output: {perception_output}")
-
         # Obstacle distance simulation
         obstacle_distance = max(0, 15 - step * 1.0)
+        perception_output = get_perception_output(obstacle_distance)
 
         # Get control commands
         steering, acceleration = controller.control(perception_output, obstacle_distance)

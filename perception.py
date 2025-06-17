@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class SimplePerceptionNet(nn.Module):
+
     def __init__(self):
         super().__init__()
         # First convolutional layer:
@@ -32,3 +33,5 @@ class SimplePerceptionNet(nn.Module):
         # Final fully connected layer (outputs raw scores for each class)
         x = self.fc2(x)
         return x
+def perfect_perception(obstacle_distance):
+        return 1 if obstacle_distance <= 9 else 0

@@ -5,18 +5,28 @@ class Controller:
         self.state = 'drive'  # Initial control state
 
     def control(self, perception_output, obstacle_distance):
-        # Basic state transition logic based on perception and distance
-        if perception_output == 1 and obstacle_distance < 5:
-            next_state = 'emergency brake'
-            acceleration = -3.0  # Strong deceleration
-        elif perception_output == 1 and obstacle_distance < 10:
-            next_state = 'brake'
-            acceleration = -1.0  # deceleration
+        # Multi-level control logic based on obstacle proximity
+        if perception_output == 1:
+            if obstacle_distance < 3:
+                next_state = 'emergency_brake'
+                acceleration = -2.0  # Strong deceleration
+            elif obstacle_distance < 6:
+                next_state = 'brake'
+                acceleration = -1.5  # Normal brake
+            elif obstacle_distance < 9:
+                next_state = 'slow'
+                acceleration = -0.5  # Mild deceleration
+            elif obstacle_distance < 12:
+                next_state = 'coast'
+                acceleration = 0.0  # No throttle, no brake
+            else:
+                next_state = 'drive'
+                acceleration = 1.0  # Mild acceleration
         else:
             next_state = 'drive'
-            acceleration = 1.0   # Mild acceleration
+            acceleration = 1.0
 
-        # Steering remains neutral in this simple example
+        # Neutral steering
         steering = 0.0
 
         # Log the transition
@@ -26,3 +36,4 @@ class Controller:
         self.state = next_state
 
         return steering, acceleration
+
