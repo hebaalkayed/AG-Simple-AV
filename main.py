@@ -50,7 +50,7 @@ def run_simulation():
         vehicle_logger.step_and_log(steering, acceleration)
 
         # Print simulation step
-        print(f"Step {step}: Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), Vel={vehicle.v:.2f}, "
+        print(f"Step {step} -  State {controller.state}, Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), Vel={vehicle.v:.2f}, "
               f"Perception={'Obstacle' if perception_output==1 else 'Clear'}, "
               f"ObstacleDist={obstacle_distance:.2f}, Acc={acceleration:.2f}")
 

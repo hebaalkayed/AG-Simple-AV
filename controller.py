@@ -26,9 +26,10 @@ class Controller:
             next_state = 'drive'
             acceleration = 1.0
 
-        # Clamp acceleration to zero if vehicle velocity is zero and acceleration would be negative (braking)
-        if self.vehicle.v <= 1e-5 and acceleration < 0:
+        # Prevent negative acceleration when velocity is (almost) zero
+        if self.vehicle.v <= 1e-5 and acceleration < 0.0:
             acceleration = 0.0
+            next_state = "stopped"
 
         # Neutral steering
         steering = 0.0
