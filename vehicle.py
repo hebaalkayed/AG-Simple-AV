@@ -8,7 +8,7 @@ class Vehicle:
         # Heading angle in radians (0 means facing east)
         self.theta = 0.0
         # Velocity in meters per second
-        self.v = 0.1  # Small initial velocity
+        self.v = 6  # Small initial velocity
         # Wheelbase length in meters
         self.L = 2.5
         # Time step (fixed)

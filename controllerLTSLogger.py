@@ -1,3 +1,9 @@
+# ANSI color codes
+GREEN = '\033[92m'
+YELLOW = '\033[93m'
+RED = '\033[91m'
+RESET = '\033[0m'
+
 class ControllerLTSLogger:
     def __init__(self):
         self.transitions = []
@@ -11,6 +17,18 @@ class ControllerLTSLogger:
     def print_lts(self):
         print("=========== Controller LTS ===========")
         for (s1, a, s2) in self.transitions:
-            print(f"{s1} --{a}--> {s2}")
+            # Extract obs from label "observe(obs,dist)"
+            try:
+                obs = int(a.split('observe(')[1].split(',')[0])
+            except Exception:
+                obs = 0
+            
+            if 'stopped' in s2:
+                color = RED
+            elif obs == 1:
+                color = YELLOW
+            else:
+                color = GREEN
+            print(f"{color}{s1} --{a}--> {s2}{RESET}")
         print("======================================")
 

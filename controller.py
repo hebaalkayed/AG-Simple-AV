@@ -5,6 +5,7 @@ class Controller:
         self.state = 'drive'  # Initial control state
         
     def control(self, perception_output, obstacle_distance):
+        # print(f"[DEBUG] Before update: current_state={self.state}")
         if self.vehicle.stopped:
             next_state = 'stopped'
             acceleration = 0.0
@@ -15,9 +16,6 @@ class Controller:
                     acceleration = -2.0
                 elif obstacle_distance < 6:
                     next_state = 'brake'
-                    acceleration = -1.5
-                elif obstacle_distance < 9:
-                    next_state = 'slow'
                     acceleration = -0.5
                 elif obstacle_distance < 12:
                     next_state = 'coast'
@@ -35,8 +33,10 @@ class Controller:
             next_state = 'stopped'
             self.vehicle.stopped = True
 
+        # print(f"[DEBUG] After update: next_state={next_state}")
+
         steering = 0.0
-        self.lts_logger.log(perception_output, obstacle_distance, next_state)
+        # self.lts_logger.log(perception_output, obstacle_distance, next_state)
         # print(f"[DEBUG] Velocity: {self.vehicle.v:.5f}, State: {next_state}, Acceleration: {acceleration}")
         self.state = next_state
         return steering, acceleration

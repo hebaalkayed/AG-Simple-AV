@@ -34,7 +34,7 @@ def run_simulation():
     # Create controller with logger
     controller = Controller(vehicle, controller_logger)
 
-    for step in range(20):
+    for step in range(17):
         obstacle_distance = max(0, 15 - step * 1.0)
         perception_output = get_perception_output(obstacle_distance)
 
@@ -49,7 +49,7 @@ def run_simulation():
 
         controller_logger.log(perception_output, obstacle_distance, controller.state)
 
-        vehicle_logger.step_and_log(steering, acceleration)
+        vehicle_logger.step_and_log(steering, acceleration, perception_output)
 
         # ANSI color codes
         GREEN = '\033[92m'
