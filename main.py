@@ -4,6 +4,7 @@ from vehicle import Vehicle
 from controller import Controller
 from controllerLTSLogger import ControllerLTSLogger
 from vehicleLTSLogger import VehicleLTSLogger
+from logger_utils import colour_line_by_state
 
 import time
 
@@ -49,30 +50,19 @@ def run_simulation():
 
         controller_logger.log(perception_output, obstacle_distance, controller.state)
 
-        vehicle_logger.step_and_log(steering, acceleration, perception_output)
+        vehicle_logger.step_and_log(steering, acceleration, perception_output, controller.state)
 
-        # ANSI color codes
-        GREEN = '\033[92m'
-        YELLOW = '\033[93m'
-        RED = '\033[91m'
-        RESET = '\033[0m'
+        line = (
+            f"Step {step} -  State {controller.state}, "
+            f"Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), "
+            f"Vel={vehicle.v:.2f}, "
+            f"Perception={'Obstacle' if perception_output == 1 else 'Clear'}, "
+            f"ObstacleDist={obstacle_distance:.2f}, "
+            f"Acc={acceleration:.2f}"
+        )
 
-        if controller.state == 'stopped':
-            color = RED
-        elif perception_output == 1:
-            color = YELLOW
-        elif perception_output == 0:
-            color = GREEN
-        else:
-            color = RESET
-
-        print(f"{color}Step {step} -  State {controller.state}, Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), "
-            f"Vel={vehicle.v:.2f}, Perception={'Obstacle' if perception_output==1 else 'Clear'}, "
-            f"ObstacleDist={obstacle_distance:.2f}, Acc={acceleration:.2f}{RESET}")
-
-
+        print(colour_line_by_state(line, controller.state))
         time.sleep(0.1)
-
 
     # Print LTS traces
     controller_logger.print_lts()

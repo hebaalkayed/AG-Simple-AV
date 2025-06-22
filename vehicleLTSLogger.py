@@ -1,10 +1,6 @@
-# ANSI color codes
-GREEN = '\033[92m'
-YELLOW = '\033[93m'
-RED = '\033[91m'
-RESET = '\033[0m'
+from logger_utils import Terminalcolours, BaseLogger
 
-class VehicleLTSLogger:
+class VehicleLTSLogger(BaseLogger):
     def __init__(self, vehicle, quantize=2):
         self.vehicle = vehicle
         self.transitions = []
@@ -18,27 +14,26 @@ class VehicleLTSLogger:
             round(self.vehicle.v, self.q)
         )
 
-    def step_and_log(self, delta, a, dt=0.1):
+    def log_vehicle_step(self, i, state, pos, vel, perception, dist, acc):
+        line = (
+            f"Step {i} -  State {state}, "
+            f"Pos={pos}, Vel={vel:.2f}, Perception={perception}, "
+            f"ObstacleDist={dist:.2f}, Acc={acc:.2f}"
+        )
+        coloured_line = self.colour_line(line, state)
+        print(coloured_line)
+
+    def step_and_log(self, delta, a, dt=0.1, state_label="drive"):
         s1 = self.get_state()
         self.vehicle.step(delta, a, dt)
         s2 = self.get_state()
-        self.transitions.append((s1, f"(delta={round(delta,2)}, a={round(a,2)})", s2))
+        self.transitions.append((s1, f"(delta={round(delta, 2)}, a={round(a, 2)})", s2, state_label))
         return s2
 
     def print_lts(self):
         print("=========== Vehicle LTS ===========")
-        for s1, action, s2 in self.transitions:
-            v = s2[-1]
-            # If velocity is zero, color red and label status as stopped
-            if v == 0.0:
-                color = RED
-                s1_disp = s1
-                # Display s2 with "stopped" label replacing velocity or as you want
-                s2_disp = ("stopped", s2[1], s2[2], s2[3])
-            else:
-                color = GREEN
-                s1_disp = s1
-                s2_disp = s2
-
-            print(f"{color}{s1_disp} --{action}--> {s2_disp}{RESET}")
+        for s1, action, s2, state_label in self.transitions:
+            line = f"{s1} --{action}--> {s2}"
+            coloured_line = self.colour_line(line, state_label)
+            print(coloured_line)
         print("===================================")
