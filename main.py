@@ -34,27 +34,45 @@ def run_simulation():
     # Create controller with logger
     controller = Controller(vehicle, controller_logger)
 
-    # Run simulation
-    for step in range(15):
-        # Obstacle distance simulation
+    for step in range(20):
         obstacle_distance = max(0, 15 - step * 1.0)
         perception_output = get_perception_output(obstacle_distance)
 
-        # Get control commands
         steering, acceleration = controller.control(perception_output, obstacle_distance)
 
-        # Log controller decision
+        dt = 0.1
+        vehicle.v += acceleration * dt
+        if vehicle.v <= 1e-5:
+            vehicle.v = 0.0
+            acceleration = 0.0
+            vehicle.stopped = True
+
         controller_logger.log(perception_output, obstacle_distance, controller.state)
 
-        # Step vehicle and log transition
         vehicle_logger.step_and_log(steering, acceleration)
 
-        # Print simulation step
-        print(f"Step {step} -  State {controller.state}, Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), Vel={vehicle.v:.2f}, "
-              f"Perception={'Obstacle' if perception_output==1 else 'Clear'}, "
-              f"ObstacleDist={obstacle_distance:.2f}, Acc={acceleration:.2f}")
+        # ANSI color codes
+        GREEN = '\033[92m'
+        YELLOW = '\033[93m'
+        RED = '\033[91m'
+        RESET = '\033[0m'
+
+        if controller.state == 'stopped':
+            color = RED
+        elif perception_output == 1:
+            color = YELLOW
+        elif perception_output == 0:
+            color = GREEN
+        else:
+            color = RESET
+
+        print(f"{color}Step {step} -  State {controller.state}, Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), "
+            f"Vel={vehicle.v:.2f}, Perception={'Obstacle' if perception_output==1 else 'Clear'}, "
+            f"ObstacleDist={obstacle_distance:.2f}, Acc={acceleration:.2f}{RESET}")
+
 
         time.sleep(0.1)
+
 
     # Print LTS traces
     controller_logger.print_lts()

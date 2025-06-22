@@ -15,6 +15,8 @@ class Vehicle:
         self.dt = 0.1
         # Store the last applied acceleration after clamping
         self.actual_acceleration = 0.0
+        # Stopped flag to freeze state when vehicle stops
+        self.stopped = False
 
     def step(self, delta, a, dt=None):
         """
@@ -25,19 +27,29 @@ class Vehicle:
             a: acceleration in m/s^2
             dt: time step in seconds (optional)
         """
+        if self.stopped:
+            # Freeze all updates once stopped
+            self.actual_acceleration = 0.0
+            return
+
         if dt is None:
             dt = self.dt
 
-        # Clamp acceleration: if velocity is zero or nearly zero, no negative acceleration allowed
-        if self.v <= 0 and a < 0:
+        # Clamp acceleration: no negative acceleration if velocity near zero
+        if self.v <= 1e-5 and a < 0:
             a = 0
 
         self.actual_acceleration = a  # Store the clamped acceleration
 
         # Update velocity
         self.v += a * dt
-        if self.v < 0:
-            self.v = 0
+
+        # If velocity drops below threshold, stop the vehicle and freeze state
+        if self.v <= 1e-5:
+            self.v = 0.0
+            self.stopped = True
+            self.actual_acceleration = 0.0
+            return
 
         # Update position (longitudinal motion along heading)
         self.x += self.v * math.cos(self.theta) * dt
