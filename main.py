@@ -4,7 +4,8 @@ from vehicle import Vehicle
 from controller import Controller
 from controllerLTSLogger import ControllerLTSLogger
 from vehicleLTSLogger import VehicleLTSLogger
-from logger_utils import colour_line_by_state
+from loggerUtils import colour_line_by_state
+from visualiseLTS import visualise_lts
 
 import time
 
@@ -67,6 +68,9 @@ def run_simulation():
     # Print LTS traces
     controller_logger.print_lts()
     vehicle_logger.print_lts()
+
+    visualise_lts(controller_logger.get_transitions())
+    visualise_lts(vehicle_logger.get_transitions())
 
 if __name__ == "__main__":
     run_simulation()

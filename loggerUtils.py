@@ -1,5 +1,3 @@
-# logger_utils.py
-
 class Terminalcolours:
     RESET = "\033[0m"
     GREEN = "\033[32m"

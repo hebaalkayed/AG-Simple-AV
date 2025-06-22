@@ -1,4 +1,4 @@
-from logger_utils import Terminalcolours, BaseLogger
+from loggerUtils import BaseLogger
 
 class VehicleLTSLogger(BaseLogger):
     def __init__(self, vehicle, quantize=2):
@@ -37,3 +37,6 @@ class VehicleLTSLogger(BaseLogger):
             coloured_line = self.colour_line(line, state_label)
             print(coloured_line)
         print("===================================")
+
+    def get_transitions(self):
+        return self.transitions
