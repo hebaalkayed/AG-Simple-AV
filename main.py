@@ -1,13 +1,13 @@
 import torch
 import time
 
-from perception import SimplePerceptionNet, perfect_perception
-from vehicle import Vehicle
-from controller import Controller
-from controllerLTSLogger import ControllerLTSLogger
-from vehicleLTSLogger import VehicleLTSLogger
-from loggerUtils import colour_line_by_state
-from visualiseLTS import visualise_lts
+from components.perception import SimplePerceptionNet, perfect_perception
+from components.vehicle import Vehicle
+from components.controller import Controller
+from lts_loggers.controller_lts_logger import ControllerLTSLogger
+from lts_loggers.vehicle_lts_logger import VehicleLTSLogger
+from lts_loggers.logger_utils import colour_line_by_state
+from visualiser.visualise_lts import visualise_lts
 
 def scenario_obstacle_approaches():
     return [max(0, 15 - step * 1.0) for step in range(17)]

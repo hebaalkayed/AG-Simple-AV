@@ -1,4 +1,4 @@
-from loggerUtils import BaseLogger
+from lts_loggers.logger_utils import BaseLogger
 
 class ControllerLTSLogger(BaseLogger):
     def __init__(self):

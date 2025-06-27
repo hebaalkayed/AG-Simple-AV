@@ -1,5 +1,4 @@
 import math
-from loggerUtils import colour_state
 
 class Vehicle:
     def __init__(self):
