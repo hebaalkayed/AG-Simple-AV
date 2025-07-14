@@ -8,6 +8,9 @@ from lts_loggers.controller_lts_logger import ControllerLTSLogger
 from lts_loggers.vehicle_lts_logger import VehicleLTSLogger
 from lts_loggers.logger_utils import colour_line_by_state
 from visualiser.visualise_lts import visualise_lts
+from contracts.controller_contract import ControllerContract
+from contracts.vehicle_contract import VehicleContract
+from contracts.perception_contract import PerceptionContract
 
 def scenario_obstacle_approaches():
     return [max(0, 15 - step * 1.0) for step in range(17)]
@@ -77,8 +80,20 @@ def run_case(obstacle_distances, case_name="Scenario"):
 
     controller_logger.print_lts()
     vehicle_logger.print_lts()
-    # visualise_lts(controller_logger.get_transitions())
-    # visualise_lts(vehicle_logger.get_transitions())
+    visualise_lts(controller_logger.get_transitions())
+    visualise_lts(vehicle_logger.get_transitions())
+
+# def check_all_contracts():
+#     controller_contract = ControllerContract()
+#     vehicle_contract = VehicleContract()
+#     perception_contract = PerceptionContract()
+
+#     print("Controller Contract:")
+#     controller_contract.check_contract()
+#     print("\nVehicle Contract:")
+#     vehicle_contract.check_contract()
+#     print("\nPerception Contract:")
+#     perception_contract.check_contract()
 
 def run_simulation():
     run_case(scenario_obstacle_approaches(), case_name="Original Obstacle Approaches")
