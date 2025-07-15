@@ -1,5 +1,5 @@
 import re
-from lts_loggers.lts_utils import BaseLTSBuilder, TerminalColours
+from lts_builders.lts_utils import BaseLTSBuilder, TerminalColours
 
 class VehicleLTSBuilder(BaseLTSBuilder):
     def __init__(self, quantize=2):

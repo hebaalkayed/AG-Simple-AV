@@ -1,7 +1,7 @@
 import math
 
 class Vehicle:
-    def __init__(self, lts_logger):
+    def __init__(self, lts_builder):
         self.x = 0.0
         self.y = 0.0
         self.theta = 0.0
@@ -10,7 +10,7 @@ class Vehicle:
         self.dt = 0.1
         self.actual_acceleration = 0.0
         self.stopped = False
-        self.lts_logger = lts_logger
+        self.lts_builder = lts_builder
 
     def get_state(self, quantize=2):
         """Return current state as rounded tuple."""
@@ -54,7 +54,7 @@ class Vehicle:
         # Get vehicle state after stepping
         next_state = self.get_state()
  
-        self.lts_logger.log_step(
+        self.lts_builder.log_step(
             s1=current_state,
             delta=delta,
             acceleration=acceleration,

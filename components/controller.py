@@ -1,7 +1,7 @@
 class Controller:
-    def __init__(self, vehicle, lts_logger):
+    def __init__(self, vehicle, lts_builder):
         self.vehicle = vehicle
-        self.lts_logger = lts_logger
+        self.lts_builder = lts_builder
         self.state = 'drive'  # Initial control state
         
     def control(self, perception_output, obstacle_distance):
@@ -36,10 +36,10 @@ class Controller:
         # print(f"[DEBUG] After update: next_state={next_state}")
 
         steering = 0.0
-        # self.lts_logger.log(perception_output, obstacle_distance, next_state)
+        # self.lts_builder.log(perception_output, obstacle_distance, next_state)
         # print(f"[DEBUG] Velocity: {self.vehicle.v:.5f}, State: {next_state}, Acceleration: {acceleration}")
         self.state = next_state
         
-        self.lts_logger.log_step(perception_output, obstacle_distance, self.state)
+        self.lts_builder.log_step(perception_output, obstacle_distance, self.state)
         return steering, acceleration
 

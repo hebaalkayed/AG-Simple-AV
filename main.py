@@ -4,8 +4,8 @@ import time
 from components.perception import SimplePerceptionNet, perfect_perception
 from components.vehicle import Vehicle
 from components.controller import Controller
-from lts_loggers.controller_lts_builder import ControllerLTSBuilder
-from lts_loggers.vehicle_lts_builder import VehicleLTSBuilder
+from lts_builders.controller_lts_builder import ControllerLTSBuilder
+from lts_builders.vehicle_lts_builder import VehicleLTSBuilder
 from visualiser.visualise_lts import visualise_lts
 
 

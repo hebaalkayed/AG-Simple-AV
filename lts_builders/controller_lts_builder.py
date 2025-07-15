@@ -1,4 +1,4 @@
-from lts_loggers.lts_utils import BaseLTSBuilder, TerminalColours, STATE_COLOUR_MAP
+from lts_builders.lts_utils import BaseLTSBuilder, TerminalColours, STATE_COLOUR_MAP
 
 class ControllerLTSBuilder(BaseLTSBuilder):
     def __init__(self):
