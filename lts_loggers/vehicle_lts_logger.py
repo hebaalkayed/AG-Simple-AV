@@ -1,42 +1,43 @@
-from lts_loggers.logger_utils import BaseLogger
+import re
+from lts_loggers.logger_utils import BaseLogger, TerminalColours
 
 class VehicleLTSLogger(BaseLogger):
-    def __init__(self, vehicle, quantize=2):
-        self.vehicle = vehicle
+    def __init__(self, quantize=2):
         self.transitions = []
-        self.q = quantize  # Decimal places for rounding
+        self.q = quantize
 
-    def get_state(self):
-        return (
-            round(self.vehicle.x, self.q),
-            round(self.vehicle.y, self.q),
-            round(self.vehicle.theta, self.q),
-            round(self.vehicle.v, self.q)
-        )
-
-    def log_vehicle_step(self, i, state, pos, vel, perception, dist, acc):
-        line = (
-            f"Step {i} -  State {state}, "
-            f"Pos={pos}, Vel={vel:.2f}, Perception={perception}, "
-            f"ObstacleDist={dist:.2f}, Acc={acc:.2f}"
-        )
-        coloured_line = self.colour_line(line, state)
-        print(coloured_line)
-
-    def step_and_log(self, delta, a, dt=0.1, state_label="drive"):
-        s1 = self.get_state()
-        self.vehicle.step(delta, a, dt)
-        s2 = self.get_state()
-        self.transitions.append((s1, f"(delta={round(delta, 2)}, a={round(a, 2)})", s2, state_label))
-        return s2
+    def log_step(self, s1, delta, acceleration, s2):
+        """Log the LTS transition: from s1 to s2 by action (delta,a)"""
+        action_label = f"(delta={round(delta,2)}, acceleration={round(acceleration,2)})"
+        self.transitions.append((s1, action_label, s2))
 
     def print_lts(self):
         print("=========== Vehicle LTS ===========")
-        for s1, action, s2, state_label in self.transitions:
+        for s1, action, s2 in self.transitions:
             line = f"{s1} --{action}--> {s2}"
-            coloured_line = self.colour_line(line, state_label)
+            coloured_line = self.colour_line(line)  # no extra args needed here
             print(coloured_line)
         print("===================================")
 
     def get_transitions(self):
         return self.transitions
+
+    def colour_line(self, line: str) -> str:
+        match = re.search(r'acceleration=([-+]?[0-9]*\.?[0-9]+)', line)
+        if match:
+            a = float(match.group(1))
+        else:
+            return line
+
+        if a > 0:
+            colour = TerminalColours.GREEN
+        elif a == 0:
+            colour = TerminalColours.DEFAULT
+        elif -0.5 <= a < 0:
+            colour = TerminalColours.ORANGE
+        else:
+            colour = TerminalColours.YELLOW
+
+        coloured_line = f"{colour}{line}{TerminalColours.RESET}"
+        return coloured_line
+

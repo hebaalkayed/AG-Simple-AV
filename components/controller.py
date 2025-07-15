@@ -39,5 +39,7 @@ class Controller:
         # self.lts_logger.log(perception_output, obstacle_distance, next_state)
         # print(f"[DEBUG] Velocity: {self.vehicle.v:.5f}, State: {next_state}, Acceleration: {acceleration}")
         self.state = next_state
+        
+        self.lts_logger.log_step(perception_output, obstacle_distance, self.state)
         return steering, acceleration
 
