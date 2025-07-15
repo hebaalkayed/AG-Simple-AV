@@ -1,6 +1,6 @@
-from lts_loggers.logger_utils import BaseLogger, TerminalColours, STATE_COLOUR_MAP
+from lts_loggers.lts_utils import BaseLTSBuilder, TerminalColours, STATE_COLOUR_MAP
 
-class ControllerLTSLogger(BaseLogger):
+class ControllerLTSBuilder(BaseLTSBuilder):
     def __init__(self):
         self.transitions = []
         self.current_state = 'drive'  # initial assumption

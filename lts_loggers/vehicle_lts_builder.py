@@ -1,7 +1,7 @@
 import re
-from lts_loggers.logger_utils import BaseLogger, TerminalColours
+from lts_loggers.lts_utils import BaseLTSBuilder, TerminalColours
 
-class VehicleLTSLogger(BaseLogger):
+class VehicleLTSBuilder(BaseLTSBuilder):
     def __init__(self, quantize=2):
         self.transitions = []
         self.q = quantize

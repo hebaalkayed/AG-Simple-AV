@@ -4,12 +4,9 @@ import time
 from components.perception import SimplePerceptionNet, perfect_perception
 from components.vehicle import Vehicle
 from components.controller import Controller
-from lts_loggers.controller_lts_logger import ControllerLTSLogger
-from lts_loggers.vehicle_lts_logger import VehicleLTSLogger
+from lts_loggers.controller_lts_builder import ControllerLTSBuilder
+from lts_loggers.vehicle_lts_builder import VehicleLTSBuilder
 from visualiser.visualise_lts import visualise_lts
-from contracts.controller_contract import ControllerContract
-from contracts.vehicle_contract import VehicleContract
-from contracts.perception_contract import PerceptionContract
 
 
 def scenario_obstacle_approaches():
@@ -51,8 +48,8 @@ def run_case(obstacle_distances, case_name="Scenario"):
             output = model(dummy_input)
             return output.argmax(dim=1).item()
 
-    controller_logger = ControllerLTSLogger()
-    vehicle_logger = VehicleLTSLogger(quantize=2)  # note: now has no vehicle inside
+    controller_logger = ControllerLTSBuilder()
+    vehicle_logger = VehicleLTSBuilder(quantize=2)  # note: now has no vehicle inside
     vehicle = Vehicle(vehicle_logger)
     controller = Controller(vehicle, controller_logger)
 

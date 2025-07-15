@@ -16,7 +16,7 @@ STATE_COLOUR_MAP = {
     "stopped": TerminalColours.RED,
 }
 
-class BaseLogger(ABC):
+class BaseLTSBuilder(ABC):
     @abstractmethod
     def colour_line(self, line: str, **kwargs) -> str:
         pass
