@@ -1,14 +1,14 @@
 import math
 
 class Vehicle:
-    def __init__(self, lts_builder):
-        self.x = 0.0
-        self.y = 0.0
-        self.theta = 0.0
-        self.v = 6
-        self.L = 2.5
-        self.dt = 0.1
-        self.actual_acceleration = 0.0
+    def __init__(self, lts_builder): 
+        self.x = 0.0 # 2D - position
+        self.y = 0.0 # 2D - position
+        self.theta = 0.0 # heading angle
+        self.v = 6 # velocity
+        self.L = 2.5 # vehicle wheelbase
+        self.dt = 0.1  # simulation time step
+        self.actual_acceleration = 0.0 # no diff from actual acc, change name
         self.stopped = False
         self.lts_builder = lts_builder
 
@@ -27,6 +27,7 @@ class Vehicle:
         """
         # Get vehicle state before stepping
         current_state = self.get_state()
+        print("heba ", current_state)
         if self.stopped:
             self.actual_acceleration = 0.0
             return

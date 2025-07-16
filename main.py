@@ -34,7 +34,6 @@ def scenario_obstacle_stays_and_disappears():
 
 def run_case(obstacle_distances, case_name="Scenario"):
     print(f"\n--- Running {case_name} ---\n")
-
     USE_PERFECT_PERCEPTION = True
     if not USE_PERFECT_PERCEPTION:
         model = SimplePerceptionNet()
@@ -48,14 +47,12 @@ def run_case(obstacle_distances, case_name="Scenario"):
             output = model(dummy_input)
             return output.argmax(dim=1).item()
 
-    controller_logger = ControllerLTSBuilder()
-    vehicle_logger = VehicleLTSBuilder(quantize=2)  # note: now has no vehicle inside
-    vehicle = Vehicle(vehicle_logger)
-    controller = Controller(vehicle, controller_logger)
+    controller_lts_builder = ControllerLTSBuilder()
+    vehicle_lts_builder = VehicleLTSBuilder(quantize=2)  # note: now has no vehicle inside
+    vehicle = Vehicle(vehicle_lts_builder)
+    controller = Controller(vehicle, controller_lts_builder)
 
     dt = 0.1
-    print("\033[92mThis should be green\033[0m")
-    print("\033[33mThis should be yellow/orange\033[0m")
 
     for step, obstacle_distance in enumerate(obstacle_distances):
         perception_output = get_perception_output(obstacle_distance)
@@ -78,10 +75,32 @@ def run_case(obstacle_distances, case_name="Scenario"):
         # print(colour_line_by_state(line, controller.state))
         time.sleep(0.1)
 
-    controller_logger.print_lts()
-    vehicle_logger.print_lts()
-    visualise_lts(controller_logger.get_transitions())
-    visualise_lts(vehicle_logger.get_transitions())
+    controller_lts_builder.print_lts()
+    vehicle_lts_builder.print_lts()
+    visualise_lts(controller_lts_builder.get_transitions())
+    visualise_lts(vehicle_lts_builder.get_transitions())
+    
+    # export LTS JSON
+    controller_lts_builder.export_to_json(
+    json_path="controller_lts.json",
+    name="ControllerLTS",
+    initial_state="drive",
+    property_dict={
+        "type": "safety",
+        "description": "Must always stop before hitting an obstacle"
+    }
+    )
+    
+    # export LTS JSON
+    controller_lts_builder.export_to_json(
+    json_path="vehicle_lts.json",
+    name="VehicleLTS",
+    initial_state="drive",
+    property_dict={
+        "type": "safety",
+        "description": "Must always stop before hitting an obstacle"
+    })
+
 
 
 def run_simulation():
