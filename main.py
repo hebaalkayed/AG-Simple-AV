@@ -87,19 +87,19 @@ def run_case(obstacle_distances, case_name="Scenario"):
     initial_state="drive",
     property_dict={
         "type": "safety",
-        "description": "Must always stop before hitting an obstacle"
+        "description": "Must always stop before hitting an obstacle" # Change and Formalise: Obstacle distance never reaches 0” (i.e., no collision occurs)
     }
     )
     
     # export LTS JSON
-    controller_lts_builder.export_to_json(
-    json_path="vehicle_lts.json",
-    name="VehicleLTS",
-    initial_state="drive",
-    property_dict={
-        "type": "safety",
-        "description": "Must always stop before hitting an obstacle"
-    })
+    # controller_lts_builder.export_to_json(
+    # json_path="vehicle_lts.json",
+    # name="VehicleLTS",
+    # initial_state="drive",
+    # property_dict={
+    #     "type": "safety",
+    #     "description": "Must always stop before hitting an obstacle"
+    # })
 
 
 
