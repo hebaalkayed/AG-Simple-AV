@@ -52,7 +52,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
     vehicle = Vehicle(vehicle_lts_builder)
     controller = Controller(vehicle, controller_lts_builder)
 
-    dt = 0.1
+    dt = 0.2
 
     for step, obstacle_distance in enumerate(obstacle_distances):
         perception_output = get_perception_output(obstacle_distance)
@@ -72,7 +72,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
             f"ObstacleDist={obstacle_distance:.2f}, "
             f"Acc={acceleration:.2f}"
         )
-        # print(colour_line_by_state(line, controller.state))
+        print(controller_lts_builder.colour_line(line, controller.state))
         time.sleep(0.1)
 
     controller_lts_builder.print_lts()
@@ -104,6 +104,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
 
 
 def run_simulation():
+    # collesion will occur in the last step
     run_case(scenario_obstacle_approaches(), case_name="Original Obstacle Approaches")
 
     # print("\nRunning new scenario (Obstacle Appears and Disappears)")

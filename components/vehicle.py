@@ -27,7 +27,8 @@ class Vehicle:
         """
         # Get vehicle state before stepping
         current_state = self.get_state()
-        print("heba ", current_state)
+        # print("heba ", current_state)
+
         if self.stopped:
             self.actual_acceleration = 0.0
             return
@@ -35,30 +36,34 @@ class Vehicle:
         if dt is None:
             dt = self.dt
 
-        if self.v <= 1e-5 and acceleration < 0:
-            acceleration = 0
-
         self.actual_acceleration = acceleration
 
+        # Update velocity with acceleration
         self.v += acceleration * dt
 
+        # Prevent negative velocity (real vehicles can’t go backward in this model)
+        if self.v < 0.0:
+            self.v = 0.0
+
+        # Mark vehicle as stopped if nearly stationary
         if self.v <= 1e-5:
             self.v = 0.0
             self.stopped = True
             self.actual_acceleration = 0.0
             return
 
+        # Update position based on current heading and new velocity
         self.x += self.v * math.cos(self.theta) * dt
         self.y += self.v * math.sin(self.theta) * dt
-        
-        
+
         # Get vehicle state after stepping
         next_state = self.get_state()
- 
+
         self.lts_builder.log_step(
             s1=current_state,
             delta=delta,
             acceleration=acceleration,
             s2=next_state,
         )
+
 		

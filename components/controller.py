@@ -13,10 +13,10 @@ class Controller:
             if perception_output == 1:
                 if obstacle_distance < 3:
                     next_state = 'emergency_brake'
-                    acceleration = -2.0
+                    acceleration = -8.0 
                 elif obstacle_distance < 6:
                     next_state = 'brake'
-                    acceleration = -0.5
+                    acceleration = -4.0
                 elif obstacle_distance < 12:
                     next_state = 'coast'
                     acceleration = 0.0
