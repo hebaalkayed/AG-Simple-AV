@@ -67,7 +67,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
         line = (
             f"Step {step} -  State {controller.state}, "
             f"Pos=({vehicle.x:.2f}, {vehicle.y:.2f}), "
-            f"Vel={vehicle.v:.2f}, "
+            f"Vel={vehicle.velocity:.2f}, "
             f"Perception={'Obstacle' if perception_output == 1 else 'Clear'}, "
             f"ObstacleDist={obstacle_distance:.2f}, "
             f"Acc={acceleration:.2f}"

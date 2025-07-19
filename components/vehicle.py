@@ -5,7 +5,7 @@ class Vehicle:
         self.x = 0.0 # 2D - position
         self.y = 0.0 # 2D - position
         self.theta = 0.0 # heading angle
-        self.v = 6 # velocity
+        self.velocity = 6 # velocity
         self.L = 2.5 # vehicle wheelbase
         self.dt = 0.1  # simulation time step
         self.actual_acceleration = 0.0 # no diff from actual acc, change name
@@ -18,7 +18,7 @@ class Vehicle:
             round(self.x, quantize),
             round(self.y, quantize),
             round(self.theta, quantize),
-            round(self.v, quantize)
+            round(self.velocity, quantize)
         )
 
     def step(self, delta, acceleration, dt=None):
@@ -39,22 +39,22 @@ class Vehicle:
         self.actual_acceleration = acceleration
 
         # Update velocity with acceleration
-        self.v += acceleration * dt
+        self.velocity += acceleration * dt
 
         # Prevent negative velocity (real vehicles can’t go backward in this model)
-        if self.v < 0.0:
-            self.v = 0.0
+        if self.velocity < 0.0:
+            self.velocity = 0.0
 
         # Mark vehicle as stopped if nearly stationary
-        if self.v <= 1e-5:
-            self.v = 0.0
+        if self.velocity <= 1e-5:
+            self.velocity = 0.0
             self.stopped = True
             self.actual_acceleration = 0.0
             return
 
         # Update position based on current heading and new velocity
-        self.x += self.v * math.cos(self.theta) * dt
-        self.y += self.v * math.sin(self.theta) * dt
+        self.x += self.velocity * math.cos(self.theta) * dt
+        self.y += self.velocity * math.sin(self.theta) * dt
 
         # Get vehicle state after stepping
         next_state = self.get_state()
