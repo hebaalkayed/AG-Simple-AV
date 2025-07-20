@@ -28,7 +28,7 @@ class Controller:
                 acceleration = 1.0
 
         # Force stop override at the very end, regardless of above logic
-        if self.vehicle.v <= 1e-5:
+        if self.vehicle.velocity <= 1e-5:
             acceleration = 0.0
             next_state = 'stopped'
             self.vehicle.stopped = True
