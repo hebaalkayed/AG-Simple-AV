@@ -5,11 +5,13 @@ class ControllerLTSBuilder(BaseLTSBuilder):
         self.transitions = []
         self.current_state = 'drive'  # initial assumption
 
-    def log_step(self, obs, dist, next_state):
+    def log_step(self, obs, dist, next_state, est_vel=None, est_acc=None, req_acc=None):
         label = f"observe({obs},{dist:.1f})"
-        # Store transitions with current state and next state
+        if est_vel is not None and est_acc is not None and req_acc is not None:
+            label += f", est_vel={est_vel:.2f}, est_acc={est_acc:.2f}, req_acc={req_acc:.2f}"
         self.transitions.append((self.current_state, label, next_state, next_state))
         self.current_state = next_state
+
 
     def print_lts(self):
         print("=========== Controller LTS ===========")

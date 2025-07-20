@@ -6,10 +6,14 @@ class VehicleLTSBuilder(BaseLTSBuilder):
         self.transitions = []
         self.q = quantize
 
-    def log_step(self, s1, delta, acceleration, s2):
-        """Log the LTS transition: from s1 to s2 by action (delta,a)"""
-        action_label = f"(delta={round(delta,2)}, acceleration={round(acceleration,2)})"
-        self.transitions.append((s1, action_label, s2))
+    def log_step(self, s1, delta, acceleration, s2, act_vel=None, req_acc=None):
+        """Log the LTS transition: from s1 to s2 by action (delta,a) and optionally estimated values"""
+        label = f"(delta={round(delta, 2)}, acceleration={round(acceleration, 2)}"
+        if act_vel is not None:
+            label += f", act_vel={act_vel:.2f}"
+        label += ")"
+        self.transitions.append((s1, label, s2))
+
 
     def print_lts(self):
         print("=========== Vehicle LTS ===========")
