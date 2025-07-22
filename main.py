@@ -33,6 +33,18 @@ def scenario_obstacle_stays_and_disappears():
         20, 20, 20, 20, 20, 20, 20  # Steps 10–16: no obstacle again
     ]
 
+
+def calculate_noisy_inputs(vehicle, obstacle_distance, velocity_noise, acceleration_noise, sensor_noise):
+    # Add noise to obstacle distance (sensor noise)
+    noisy_obstacle_distance = max(0.0, obstacle_distance + random.gauss(0, sensor_noise))
+
+    # Add noise to velocity and acceleration estimates
+    estimated_velocity = vehicle.actual_velocity + random.gauss(0, velocity_noise)
+    estimated_acceleration = vehicle.actual_acceleration + random.gauss(0, acceleration_noise)
+
+    return noisy_obstacle_distance, estimated_velocity, estimated_acceleration
+
+
 def run_case(obstacle_distances, case_name="Scenario"):
     print(f"\n--- Running {case_name} ---\n")
     USE_PERFECT_PERCEPTION = True
@@ -58,17 +70,21 @@ def run_case(obstacle_distances, case_name="Scenario"):
 
     for step, obstacle_distance in enumerate(obstacle_distances):
         perception_output = get_perception_output(obstacle_distance)
-
-        # Noisy obstacle distance for perception
-        noisy_obstacle_distance = max(0, obstacle_distance + random.gauss(0, sensor_noise))
         
+        noisy_obstacle_distance, estimated_velocity, estimated_acceleration = calculate_noisy_inputs(
+            vehicle,
+            obstacle_distance,
+            velocity_noise,
+            acceleration_noise,
+            sensor_noise
+        )
+        
+        # Update controller with noisy estimates
+        controller.update_estimates(estimated_velocity, estimated_acceleration)
+        
+        # Pass noisy distance to control loop
         steering, requested_acceleration = controller.control(perception_output, noisy_obstacle_distance)
         vehicle.step(steering, requested_acceleration, dt)
-
-        # Now add noise to controller's velocity and acceleration estimates AFTER updating
-        controller.estimated_velocity = vehicle.actual_velocity + random.gauss(0, velocity_noise)
-        controller.estimated_acceleration = vehicle.actual_acceleration + random.gauss(0, acceleration_noise)
-
 
         if DEBUG:
             line = (
