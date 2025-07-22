@@ -10,8 +10,8 @@ from lts_builders.vehicle_lts_builder import VehicleLTSBuilder
 from visualiser.visualise_lts import visualise_lts
 
 sensor_noise = 0.5  # for obstacle distance
-velocity_noise = 0.1  # for velocity estimate
-acceleration_noise = 0.05  # for acceleration estimate
+velocity_noise = 0.2  # for velocity estimate
+acceleration_noise = 0.5  # for acceleration estimate
 
 def scenario_obstacle_approaches():
     return [max(0, 15 - step * 1.0) for step in range(18)]
@@ -64,6 +64,11 @@ def run_case(obstacle_distances, case_name="Scenario"):
         
         steering, requested_acceleration = controller.control(perception_output, noisy_obstacle_distance)
         vehicle.step(steering, requested_acceleration, dt)
+
+        # Now add noise to controller's velocity and acceleration estimates AFTER updating
+        controller.estimated_velocity = vehicle.actual_velocity + random.gauss(0, velocity_noise)
+        controller.estimated_acceleration = vehicle.actual_acceleration + random.gauss(0, acceleration_noise)
+
 
         if DEBUG:
             line = (
