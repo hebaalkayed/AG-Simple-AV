@@ -8,7 +8,9 @@ class VehicleLTSBuilder(BaseLTSBuilder):
 
     def log_step(self, s1, delta, acceleration, s2, act_vel=None, req_acc=None):
         """Log the LTS transition: from s1 to s2 by action (delta,a) and optionally estimated values"""
-        label = f"(delta={round(delta, 2)}, acceleration={round(acceleration, 2)}"
+        # label = f"(delta={round(delta, 2)}, acceleration={round(acceleration, 2)}" for now ignore delta
+        label = f"(acceleration={round(acceleration, 2)}"
+
         if act_vel is not None:
             label += f", act_vel={act_vel:.2f}"
         label += ")"
