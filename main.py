@@ -93,7 +93,12 @@ def run_case(obstacle_distances, case_name="Scenario"):
         initial_state="drive",
         property_dict={
             "type": "safety",
-            "description": "Must always stop before hitting an obstacle"
+            "description": "No collision: obstacle_distance must never be 0.0",
+            "violation_condition": {
+                 "field": "obstacle_distance",
+                 "operator": "==",
+                 "value": 0.0
+            }      
         }
     )
 
