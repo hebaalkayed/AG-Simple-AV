@@ -1,8 +1,8 @@
-# Autonomous Vehicle System Assume-Guarantee Verification Framework
+# Autonomous Vehicle System Assume-Guarantee Verification Example
 
 ## Purpose
 
-This repository models multiple components of a learning-enabled autonomous vehicle system—including controller, vehicle dynamics, and perception—as Labelled Transition Systems (LTS). It implements the **assumption generation algorithm** from the paper:
+This repository abstractly models multiple components of a learning-enabled autonomous vehicle system—including controller, vehicle dynamics, and perception—as Labelled Transition Systems (LTS). It briefly touches on the **assumption generation algorithm** from the paper:
 
 > [*Assumption Generation for the Verification of Learning-Enabled Autonomous Systems* (Pasareanu et al.)](https://arxiv.org/abs/2305.18372)
 
@@ -37,7 +37,7 @@ The goal is to support **compositional verification** of safety properties (e.g.
 
 This executes predefined scenarios such as an obstacle approaching, simulating perception and control with noise.
 
-1. **Generate weakest assumption:**
+2. **Generate weakest assumption:**
 
 After running the simulation and generating the LTS JSON files (e.g., `controller_lts.json`), run the assumption generator:
 
