@@ -1,5 +1,6 @@
 import torch
 import time
+import random
 
 from components.perception import SimplePerceptionNet, perfect_perception
 from components.vehicle import Vehicle
@@ -7,6 +8,10 @@ from components.controller import Controller
 from lts_builders.controller_lts_builder import ControllerLTSBuilder
 from lts_builders.vehicle_lts_builder import VehicleLTSBuilder
 from visualiser.visualise_lts import visualise_lts
+
+sensor_noise = 0.5  # for obstacle distance
+velocity_noise = 0.1  # for velocity estimate
+acceleration_noise = 0.05  # for acceleration estimate
 
 def scenario_obstacle_approaches():
     return [max(0, 15 - step * 1.0) for step in range(18)]
@@ -54,8 +59,11 @@ def run_case(obstacle_distances, case_name="Scenario"):
     for step, obstacle_distance in enumerate(obstacle_distances):
         perception_output = get_perception_output(obstacle_distance)
 
-        steering, acceleration = controller.control(perception_output, obstacle_distance)
-        vehicle.step(steering, acceleration, dt)
+        # Noisy obstacle distance for perception
+        noisy_obstacle_distance = max(0, obstacle_distance + random.gauss(0, sensor_noise))
+        
+        steering, requested_acceleration = controller.control(perception_output, noisy_obstacle_distance)
+        vehicle.step(steering, requested_acceleration, dt)
 
         if DEBUG:
             line = (
@@ -65,6 +73,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
                 f"Vel(Est)={controller.estimated_velocity:.2f}, "
                 f"Perception={'Obstacle' if perception_output == 1 else 'Clear'}, "
                 f"ObstacleDist={obstacle_distance:.2f}, "
+                f"NoisyObstacleDist={noisy_obstacle_distance:.2f}, "
                 f"Acc(Actual)={vehicle.actual_acceleration:.2f}, "
                 f"Acc(Req)={vehicle.requested_acceleration:.2f}, "
                 f"Acc(Est)={controller.estimated_acceleration:.2f}"
@@ -76,7 +85,7 @@ def run_case(obstacle_distances, case_name="Scenario"):
                 f"Vel={vehicle.actual_velocity:.2f}, "
                 f"Perception={'Obstacle' if perception_output == 1 else 'Clear'}, "
                 f"ObstacleDist={obstacle_distance:.2f}, "
-                f"Acc={acceleration:.2f}"
+                f"requested_acceleration={requested_acceleration:.2f}"
             )
 
         print(controller_lts_builder.colour_line(line, controller.state))
