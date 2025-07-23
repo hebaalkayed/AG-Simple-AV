@@ -24,7 +24,8 @@ class AssumptionGenerator:
         AΣw := ErrorRemoval(ÂeΣrr)
         """
         # Step 1: Compose with Perr (error automaton from P)
-        M_comp = self._compose(self.M, self._build_error_automaton(self.P))
+        Perr = self._build_error_automaton(self.P)
+        M_comp = self._compose(self.M, Perr)
 
         # Step 2: Project to interface alphabet Σ
         M_proj = self._project_to_alphabet(M_comp, self.Sigma)
@@ -220,7 +221,6 @@ class AssumptionGenerator:
         lts_copy = copy.deepcopy(lts)
         lts_copy['unsafe_states'] = list(unsafe)
         return lts_copy
-
 
     def _determinize(self, lts):
         """
