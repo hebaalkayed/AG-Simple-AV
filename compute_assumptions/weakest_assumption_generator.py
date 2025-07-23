@@ -1,7 +1,23 @@
-# assumption_generator.py
+# weakest_assumption_generator.py
 
 import json
 import copy
+from collections import defaultdict
+
+def is_deterministic(lts):
+    """
+    Checks if the given LTS is deterministic:
+    for every state and action, there is at most one transition.
+    """
+    seen = defaultdict(set)
+    for t in lts["transitions"]:
+        key = (t["from"], t["action"])
+        if t["to"] in seen[key]:
+            continue
+        if len(seen[key]) > 0:
+            return False  # multiple destinations for same (state, action)
+        seen[key].add(t["to"])
+    return True
 
 class AssumptionGenerator:
     def __init__(self, lts_model, property_p, interface_alphabet):
@@ -23,23 +39,27 @@ class AssumptionGenerator:
         ÂeΣrr := CompletionWithSink(AeΣrr)
         AΣw := ErrorRemoval(ÂeΣrr)
         """
-        # Step 1: Compose with Perr (error automaton from P)
+        print("[Step 1] Composing model with error automaton...")
         Perr = self._build_error_automaton(self.P)
         M_comp = self._compose(self.M, Perr)
 
-        # Step 2: Project to interface alphabet Σ
+        print("[Step 2] Projecting composed model to interface alphabet Σ...")
         M_proj = self._project_to_alphabet(M_comp, self.Sigma)
 
-        # Step 3: Backward error propagation
+        print("[Step 3] Performing backward error propagation...")
         M_bep = self._backward_error_propagation(M_proj)
 
-        # Step 4: Determinization
-        M_det = self._determinize(M_bep)
+        if not is_deterministic(M_proj):
+            print("[Warning] Projected LTS is non-deterministic. Determinization will be applied.")
+            M_det = self._determinize(M_bep)
+        else:
+            print("[Info] Projected LTS is deterministic. Skipping determinization.")
+            M_det = M_bep
 
-        # Step 5: Completion with sink
+        print("[Step 5] Completing with sink state...")
         M_completed = self._complete_with_sink(M_det)
 
-        # Step 6: Error removal
+        print("[Step 6] Removing error states and unreachable parts...")
         A_sigma_w = self._error_removal(M_completed)
 
         return A_sigma_w
@@ -78,8 +98,7 @@ class AssumptionGenerator:
                         "action": action
                     })
             except Exception:
-                # Ignore unparseable actions
-                pass
+                pass  # Skip unparseable actions
 
         return err_automaton
 
@@ -117,18 +136,17 @@ class AssumptionGenerator:
             return actual < value
         elif operator == ">":
             return actual > value
-        elif operator == "<=":
+        elif operator == "<=" or operator == "<=":
             return actual <= value
-        elif operator == ">=":
+        elif operator == ">=" or operator == ">=":
             return actual >= value
         return False
 
     def _compose(self, M, Perr):
         """
         Parallel composition: (M || Perr)
-        We synchronise over shared actions — i.e., identical action strings.
-        This performs a product construction and only advances both
-        systems together when actions match.
+        Synchronises over shared actions — i.e., identical action strings.
+        This performs a product construction where transitions match.
         """
         composed = {
             "states": [],
@@ -137,7 +155,6 @@ class AssumptionGenerator:
             "interface_alphabet": self.Sigma
         }
 
-        # BFS-style product state generation
         queue = [composed["initial_state"]]
         visited = set(queue)
 
@@ -194,21 +211,18 @@ class AssumptionGenerator:
 
     def _backward_error_propagation(self, lts):
         """
-        Identify all states that can lead to 'err' via any path (i.e., unsafe states).
-        We do this by computing the backward reachable set from all 'err'-containing states.
+        Identify all states that can lead to 'err' via any path.
+        Compute backward reachable set from all 'err'-containing states.
         """
-        # Build reverse transition map: to_state -> list of from_states
         reverse_map = {}
         for t in lts['transitions']:
             to_state = t['to']
             from_state = t['from']
             reverse_map.setdefault(to_state, set()).add(from_state)
 
-        # Start from all states containing 'err'
         unsafe = set([s for s in lts['states'] if 'err' in s])
         queue = list(unsafe)
 
-        # Perform backward reachability: add all predecessors that lead to an unsafe state
         while queue:
             s = queue.pop(0)
             for pred in reverse_map.get(s, []):
@@ -216,8 +230,6 @@ class AssumptionGenerator:
                     unsafe.add(pred)
                     queue.append(pred)
 
-        # Create a new LTS that keeps all transitions and states
-        # (we don't eliminate anything here; just mark unsafe states)
         lts_copy = copy.deepcopy(lts)
         lts_copy['unsafe_states'] = list(unsafe)
         return lts_copy
@@ -285,4 +297,4 @@ if __name__ == "__main__":
     with open('controller_assumption.json', 'w') as f:
         json.dump(assumption, f, indent=4)
 
-    print("Assumption generated and saved to controller_assumption.json")
+    print("\nAssumption generated and saved to controller_assumption.json")
