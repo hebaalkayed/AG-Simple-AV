@@ -46,23 +46,129 @@ class AssumptionGenerator:
     def _build_error_automaton(self, P):
         """
         Build the Perr automaton from property P.
-        Typically accepts traces that violate P.
-        For now: simulate Perr as a single 'err' state.
+        Accepts traces that violate the safety condition.
+        For generality, we create transitions from 'ok' to 'err'
+        for any action that violates the given violation_condition.
         """
-        return {
+        err_automaton = {
             "states": ["ok", "err"],
             "initial_state": "ok",
             "transitions": [],
             "interface_alphabet": self.Sigma
         }
 
+        field = P["violation_condition"]["field"]
+        operator = P["violation_condition"]["operator"]
+        value = P["violation_condition"]["value"]
+
+        for action in self.Sigma:
+            try:
+                action_dict = self._parse_action(action)
+                if self._violates_property(action_dict, field, operator, value):
+                    err_automaton["transitions"].append({
+                        "from": "ok",
+                        "to": "err",
+                        "action": action
+                    })
+                else:
+                    err_automaton["transitions"].append({
+                        "from": "ok",
+                        "to": "ok",
+                        "action": action
+                    })
+            except Exception:
+                # Ignore unparseable actions
+                pass
+
+        return err_automaton
+
+    def _parse_action(self, action_str):
+        """
+        Converts an action string like "a=1, b=2" to a dictionary {'a': 1, 'b': 2}
+        """
+        parts = [p.strip() for p in action_str.split(",")]
+        result = {}
+        for part in parts:
+            if "=" in part:
+                key, val = part.split("=")
+                key = key.strip()
+                val = val.strip()
+                try:
+                    val = float(val)
+                except ValueError:
+                    pass
+                result[key] = val
+        return result
+
+    def _violates_property(self, action_dict, field, operator, value):
+        """
+        Evaluates whether a given action violates the property.
+        Currently supports ==, !=, <, >, <=, >=.
+        """
+        if field not in action_dict:
+            return False
+        actual = action_dict[field]
+        if operator == "==":
+            return actual == value
+        elif operator == "!=":
+            return actual != value
+        elif operator == "<":
+            return actual < value
+        elif operator == ">":
+            return actual > value
+        elif operator == "<=":
+            return actual <= value
+        elif operator == ">=":
+            return actual >= value
+        return False
+
     def _compose(self, M, Perr):
         """
-        Parallel composition: (M || Perr) -- composed via synchronous product over shared action  (e.g., observe(...)).
-        For now: just return M unchanged.
+        Parallel composition: (M || Perr)
+        We synchronise over shared actions — i.e., identical action strings.
+        This performs a product construction and only advances both
+        systems together when actions match.
         """
-        # Proper composition is complex; skip for small example.
-        return copy.deepcopy(M)
+        composed = {
+            "states": [],
+            "initial_state": (M["initial_state"], Perr["initial_state"]),
+            "transitions": [],
+            "interface_alphabet": self.Sigma
+        }
+
+        # BFS-style product state generation
+        queue = [composed["initial_state"]]
+        visited = set(queue)
+
+        while queue:
+            (s1, s2) = queue.pop(0)
+            composed["states"].append((s1, s2))
+
+            for t1 in M["transitions"]:
+                if t1["from"] != s1:
+                    continue
+                for t2 in Perr["transitions"]:
+                    if t2["from"] != s2:
+                        continue
+                    if t1["action"] == t2["action"]:
+                        new_state = (t1["to"], t2["to"])
+                        if new_state not in visited:
+                            visited.add(new_state)
+                            queue.append(new_state)
+                        composed["transitions"].append({
+                            "from": (s1, s2),
+                            "to": new_state,
+                            "action": t1["action"]
+                        })
+
+        # Flatten state names to strings for JSON compatibility
+        composed["states"] = [f"{a}||{b}" for (a, b) in composed["states"]]
+        composed["initial_state"] = f"{composed['initial_state'][0]}||{composed['initial_state'][1]}"
+        for t in composed["transitions"]:
+            t["from"] = f"{t['from'][0]}||{t['from'][1]}"
+            t["to"] = f"{t['to'][0]}||{t['to'][1]}"
+
+        return composed
 
     def _project_to_alphabet(self, lts, alphabet):
         """
@@ -73,16 +179,48 @@ class AssumptionGenerator:
             t for t in lts['transitions']
             if t['action'] in alphabet
         ]
+        states_involved = set()
+        for t in new_transitions:
+            states_involved.add(t['from'])
+            states_involved.add(t['to'])
+
         lts_copy = copy.deepcopy(lts)
         lts_copy['transitions'] = new_transitions
+        lts_copy['states'] = list(states_involved)
+        if lts_copy['initial_state'] not in lts_copy['states']:
+            lts_copy['states'].append(lts_copy['initial_state'])
         return lts_copy
 
     def _backward_error_propagation(self, lts):
         """
-        Propagate error backward to find unsafe states.
-        Placeholder: return as is.
+        Identify all states that can lead to 'err' via any path (i.e., unsafe states).
+        We do this by computing the backward reachable set from all 'err'-containing states.
         """
-        return lts
+        # Build reverse transition map: to_state -> list of from_states
+        reverse_map = {}
+        for t in lts['transitions']:
+            to_state = t['to']
+            from_state = t['from']
+            reverse_map.setdefault(to_state, set()).add(from_state)
+
+        # Start from all states containing 'err'
+        unsafe = set([s for s in lts['states'] if 'err' in s])
+        queue = list(unsafe)
+
+        # Perform backward reachability: add all predecessors that lead to an unsafe state
+        while queue:
+            s = queue.pop(0)
+            for pred in reverse_map.get(s, []):
+                if pred not in unsafe:
+                    unsafe.add(pred)
+                    queue.append(pred)
+
+        # Create a new LTS that keeps all transitions and states
+        # (we don't eliminate anything here; just mark unsafe states)
+        lts_copy = copy.deepcopy(lts)
+        lts_copy['unsafe_states'] = list(unsafe)
+        return lts_copy
+
 
     def _determinize(self, lts):
         """
@@ -123,10 +261,10 @@ class AssumptionGenerator:
         Remove error states and unreachable parts.
         Remove 'err' state and transitions to/from it.
         """
-        states = [s for s in lts['states'] if s != 'err']
+        states = [s for s in lts['states'] if 'err' not in s]
         transitions = [
             t for t in lts['transitions']
-            if t['from'] != 'err' and t['to'] != 'err'
+            if 'err' not in t['from'] and 'err' not in t['to']
         ]
         lts_copy = copy.deepcopy(lts)
         lts_copy['states'] = states
