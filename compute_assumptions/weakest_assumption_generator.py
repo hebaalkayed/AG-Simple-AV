@@ -4,6 +4,36 @@ import json
 import copy
 from collections import defaultdict
 
+def validate_lts_structure(lts, name="LTS"):
+    errors = []
+    states = set(lts.get("states", []))
+    initial = lts.get("initial_state", None)
+    transitions = lts.get("transitions", [])
+
+    if initial not in states:
+        errors.append(f"{name}: initial_state '{initial}' not in states.")
+
+    for i, t in enumerate(transitions):
+        if t["from"] not in states:
+            errors.append(f"{name}: transition {i} has unknown 'from' state: {t['from']}")
+        if t["to"] not in states:
+            errors.append(f"{name}: transition {i} has unknown 'to' state: {t['to']}")
+        if "action" not in t:
+            errors.append(f"{name}: transition {i} missing 'action'.")
+
+    if "interface_alphabet" in lts:
+        alphabet = set(lts["interface_alphabet"])
+        for i, t in enumerate(transitions):
+            if t["action"] not in alphabet:
+                errors.append(f"{name}: transition {i} uses action '{t['action']}' not in interface_alphabet.")
+
+    if errors:
+        print(f"[Validation] Issues found in {name}:")
+        for err in errors:
+            print(" -", err)
+    else:
+        print(f"[Validation] {name} passed structural checks.")
+
 def is_deterministic(lts):
     """
     Checks if the given LTS is deterministic:
@@ -42,12 +72,15 @@ class AssumptionGenerator:
         print("[Step 1] Composing model with error automaton...")
         Perr = self._build_error_automaton(self.P)
         M_comp = self._compose(self.M, Perr)
+        validate_lts_structure(M_comp, "Composed Perr LTS")
 
         print("[Step 2] Projecting composed model to interface alphabet Σ...")
         M_proj = self._project_to_alphabet(M_comp, self.Sigma)
+        validate_lts_structure(M_proj, "Projected Composed LTS")
 
         print("[Step 3] Performing backward error propagation...")
         M_bep = self._backward_error_propagation(M_proj)
+        validate_lts_structure(M_bep, "Backward Error Propagated LTS")
 
         if not is_deterministic(M_proj):
             print("[Warning] Projected LTS is non-deterministic. Determinization will be applied.")
@@ -58,9 +91,11 @@ class AssumptionGenerator:
 
         print("[Step 5] Completing with sink state...")
         M_completed = self._complete_with_sink(M_det)
+        validate_lts_structure(M_completed, "Completed with Sink LTS")
 
         print("[Step 6] Removing error states and unreachable parts...")
         A_sigma_w = self._error_removal(M_completed)
+        validate_lts_structure(A_sigma_w, "Post Error States LTS")
 
         return A_sigma_w
 
