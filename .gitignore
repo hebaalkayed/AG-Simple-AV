@@ -195,3 +195,6 @@ cython_debug/
 .cursorindexingignore
 
 *.json
+*.gv
+*.png
+*_assumption_output/

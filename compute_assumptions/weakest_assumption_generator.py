@@ -2,7 +2,17 @@
 
 import json
 import copy
+import logging
+import os
+
 from collections import defaultdict
+
+try:
+    import graphviz
+except ImportError:
+    graphviz = None
+
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
 
 def validate_lts_structure(lts, name="LTS"):
     errors = []
@@ -28,74 +38,89 @@ def validate_lts_structure(lts, name="LTS"):
                 errors.append(f"{name}: transition {i} uses action '{t['action']}' not in interface_alphabet.")
 
     if errors:
-        print(f"[Validation] Issues found in {name}:")
+        logging.warning(f"[Validation] Issues found in {name}:")
         for err in errors:
-            print(" -", err)
+            logging.warning(" - %s", err)
     else:
-        print(f"[Validation] {name} passed structural checks.")
+        logging.info(f"[Validation] {name} passed structural checks.")
 
 def is_deterministic(lts):
-    """
-    Checks if the given LTS is deterministic:
-    for every state and action, there is at most one transition.
-    """
     seen = defaultdict(set)
     for t in lts["transitions"]:
         key = (t["from"], t["action"])
         if t["to"] in seen[key]:
             continue
         if len(seen[key]) > 0:
-            return False  # multiple destinations for same (state, action)
+            return False
         seen[key].add(t["to"])
     return True
 
+def visualise_lts(lts, name="LTS", output_dir="."):
+    if graphviz is None:
+        logging.warning("Graphviz is not installed; skipping visualisation for %s.", name)
+        return
+
+    dot = graphviz.Digraph(name, format='png')
+    dot.attr(rankdir='LR')
+
+    for state in lts["states"]:
+        shape = "doublecircle" if 'err' in state else "circle"
+        dot.node(state, shape=shape)
+
+    dot.node("", shape="none")
+    dot.edge("", lts["initial_state"])
+
+    for t in lts["transitions"]:
+        dot.edge(t["from"], t["to"], label=t["action"])
+
+    output_path = os.path.join(output_dir, f"{name}.gv")
+    dot.render(output_path, view=False)
+    logging.info("Visualised %s -> %s.png", name, output_path)
+
 class AssumptionGenerator:
     def __init__(self, lts_model, property_p, interface_alphabet):
-        """
-        lts_model: your LTS object (dict)
-        property_p: dict describing the property
-        interface_alphabet: list of actions in Σ
-        """
         self.M = lts_model
         self.P = property_p
         self.Sigma = interface_alphabet
+        self.lts_name = self.M.get("name", "lts")
 
     def build_assumption(self):
-        """
-        Implements:
-        M′ := (M || Perr )↓Σ  
-        M′′ := BackwardErrorPropagation(M′)
-        AeΣrr := Determinization(M′′)
-        ÂeΣrr := CompletionWithSink(AeΣrr)
-        AΣw := ErrorRemoval(ÂeΣrr)
-        """
-        print("[Step 1] Composing model with error automaton...")
+        output_dir = f"{self.lts_name}_assumption_output"
+        os.makedirs(output_dir, exist_ok=True)
+        self.output_dir = output_dir
+
+        logging.info("[Step 1] Composing model with error automaton...")
         Perr = self._build_error_automaton(self.P)
         M_comp = self._compose(self.M, Perr)
-        validate_lts_structure(M_comp, "Composed Perr LTS")
+        validate_lts_structure(M_comp, f"{self.lts_name}_composed")
+        visualise_lts(M_comp, f"{self.lts_name}_composed", self.output_dir)
 
-        print("[Step 2] Projecting composed model to interface alphabet Σ...")
+        logging.info("[Step 2] Projecting composed model to interface alphabet Σ...")
         M_proj = self._project_to_alphabet(M_comp, self.Sigma)
-        validate_lts_structure(M_proj, "Projected Composed LTS")
+        validate_lts_structure(M_proj, f"{self.lts_name}_projected")
+        visualise_lts(M_proj, f"{self.lts_name}_projected", self.output_dir)
 
-        print("[Step 3] Performing backward error propagation...")
+        logging.info("[Step 3] Performing backward error propagation...")
         M_bep = self._backward_error_propagation(M_proj)
-        validate_lts_structure(M_bep, "Backward Error Propagated LTS")
+        validate_lts_structure(M_bep, f"{self.lts_name}_backward")
+        visualise_lts(M_bep, f"{self.lts_name}_backward", self.output_dir)
 
         if not is_deterministic(M_proj):
-            print("[Warning] Projected LTS is non-deterministic. Determinization will be applied.")
+            logging.warning("Projected LTS is non-deterministic. Determinization will be applied.")
             M_det = self._determinize(M_bep)
         else:
-            print("[Info] Projected LTS is deterministic. Skipping determinization.")
+            logging.info("Projected LTS is deterministic. Skipping determinization.")
             M_det = M_bep
 
-        print("[Step 5] Completing with sink state...")
+        logging.info("[Step 5] Completing with sink state...")
         M_completed = self._complete_with_sink(M_det)
-        validate_lts_structure(M_completed, "Completed with Sink LTS")
+        validate_lts_structure(M_completed, f"{self.lts_name}_completed")
+        visualise_lts(M_completed, f"{self.lts_name}_completed", self.output_dir)
 
-        print("[Step 6] Removing error states and unreachable parts...")
+        logging.info("[Step 6] Removing error states and unreachable parts...")
         A_sigma_w = self._error_removal(M_completed)
-        validate_lts_structure(A_sigma_w, "Post Error States LTS")
+        validate_lts_structure(A_sigma_w, f"{self.lts_name}_final_assumption")
+        visualise_lts(A_sigma_w, f"{self.lts_name}_final_assumption", self.output_dir)
 
         return A_sigma_w
 
@@ -323,13 +348,15 @@ if __name__ == "__main__":
     with open('controller_lts.json') as f:
         lts = json.load(f)
 
+    lts_name = lts.get("name", "controller")
     interface_alphabet = lts['interface_alphabet']
     property_dict = lts['property']
 
     gen = AssumptionGenerator(lts, property_dict, interface_alphabet)
     assumption = gen.build_assumption()
 
-    with open('controller_assumption.json', 'w') as f:
+    output_file = os.path.join(f"{lts_name}_assumption_output", f"{lts_name}_assumption.json")
+    with open(output_file, 'w') as f:
         json.dump(assumption, f, indent=4)
 
-    print("\nAssumption generated and saved to controller_assumption.json")
+    logging.info("\nAssumption generated and saved to %s", output_file)
