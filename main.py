@@ -114,8 +114,8 @@ def run_case(obstacle_distances, case_name="Scenario"):
 
     controller_lts_builder.print_lts()
     vehicle_lts_builder.print_lts()
-    visualise_lts(controller_lts_builder.get_transitions())
-    visualise_lts(vehicle_lts_builder.get_transitions())
+    visualise_lts(controller_lts_builder.get_transitions(), save_path='controller_lts.png')
+    visualise_lts(vehicle_lts_builder.get_transitions(), save_path='vehicle_lts.png')
 
     controller_lts_builder.export_to_json(
         json_path="controller_lts.json",

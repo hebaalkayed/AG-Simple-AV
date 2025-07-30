@@ -4,7 +4,7 @@ import json
 import copy
 import logging
 import os
-
+from visualiser.visualise_lts import visualise_lts
 from collections import defaultdict
 
 try:
@@ -55,28 +55,6 @@ def is_deterministic(lts):
         seen[key].add(t["to"])
     return True
 
-def visualise_lts(lts, name="LTS", output_dir="."):
-    if graphviz is None:
-        logging.warning("Graphviz is not installed; skipping visualisation for %s.", name)
-        return
-
-    dot = graphviz.Digraph(name, format='png')
-    dot.attr(rankdir='LR')
-
-    for state in lts["states"]:
-        shape = "doublecircle" if 'err' in state else "circle"
-        dot.node(state, shape=shape)
-
-    dot.node("", shape="none")
-    dot.edge("", lts["initial_state"])
-
-    for t in lts["transitions"]:
-        dot.edge(t["from"], t["to"], label=t["action"])
-
-    output_path = os.path.join(output_dir, f"{name}.gv")
-    dot.render(output_path, view=False)
-    logging.info("Visualised %s -> %s.png", name, output_path)
-
 class AssumptionGenerator:
     def __init__(self, lts_model, property_p, interface_alphabet):
         self.M = lts_model
@@ -93,17 +71,23 @@ class AssumptionGenerator:
         Perr = self._build_error_automaton(self.P)
         M_comp = self._compose(self.M, Perr)
         validate_lts_structure(M_comp, f"{self.lts_name}_composed")
-        visualise_lts(M_comp, f"{self.lts_name}_composed", self.output_dir)
+        visualise_lts(M_comp['transitions'], os.path.join(self.output_dir, f"1_{self.lts_name}_composed.png"))
+        with open(os.path.join(output_dir, f"1_{self.lts_name}_composed.json"), 'w') as f:
+            json.dump(M_comp, f, indent=4)
 
         logging.info("[Step 2] Projecting composed model to interface alphabet Σ...")
         M_proj = self._project_to_alphabet(M_comp, self.Sigma)
         validate_lts_structure(M_proj, f"{self.lts_name}_projected")
-        visualise_lts(M_proj, f"{self.lts_name}_projected", self.output_dir)
+        visualise_lts(M_proj['transitions'], os.path.join(self.output_dir, f"2_{self.lts_name}_projected.png"))
+        with open(os.path.join(output_dir, f"2_{self.lts_name}_projected.json"), 'w') as f:
+            json.dump(M_proj, f, indent=4)
 
         logging.info("[Step 3] Performing backward error propagation...")
         M_bep = self._backward_error_propagation(M_proj)
         validate_lts_structure(M_bep, f"{self.lts_name}_backward")
-        visualise_lts(M_bep, f"{self.lts_name}_backward", self.output_dir)
+        visualise_lts(M_bep['transitions'], os.path.join(self.output_dir, f"3_{self.lts_name}_backward.png"))
+        with open(os.path.join(output_dir, f"3_{self.lts_name}_backward.json"), 'w') as f:
+            json.dump(M_bep, f, indent=4)
 
         if not is_deterministic(M_proj):
             logging.warning("Projected LTS is non-deterministic. Determinization will be applied.")
@@ -111,18 +95,25 @@ class AssumptionGenerator:
         else:
             logging.info("Projected LTS is deterministic. Skipping determinization.")
             M_det = M_bep
+        with open(os.path.join(output_dir, f"4_{self.lts_name}_determinized.json"), 'w') as f:
+            json.dump(M_det, f, indent=4)
 
         logging.info("[Step 5] Completing with sink state...")
         M_completed = self._complete_with_sink(M_det)
         validate_lts_structure(M_completed, f"{self.lts_name}_completed")
-        visualise_lts(M_completed, f"{self.lts_name}_completed", self.output_dir)
+        visualise_lts(M_completed['transitions'], os.path.join(self.output_dir, f"5_{self.lts_name}_completed.png"))
+        with open(os.path.join(output_dir, f"5_{self.lts_name}_completed.json"), 'w') as f:
+            json.dump(M_completed, f, indent=4)
 
         logging.info("[Step 6] Removing error states and unreachable parts...")
         A_sigma_w = self._error_removal(M_completed)
         validate_lts_structure(A_sigma_w, f"{self.lts_name}_final_assumption")
-        visualise_lts(A_sigma_w, f"{self.lts_name}_final_assumption", self.output_dir)
+        visualise_lts(A_sigma_w['transitions'], os.path.join(self.output_dir, f"6_{self.lts_name}_final_assumption.png"))
+        with open(os.path.join(output_dir, f"6_{self.lts_name}_final_assumption.json"), 'w') as f:
+            json.dump(A_sigma_w, f, indent=4)
 
         return A_sigma_w
+
 
     def _build_error_automaton(self, P):
         """
