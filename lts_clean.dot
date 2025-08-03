@@ -1,0 +1,142 @@
+digraph LTS {
+  rankdir=TB;
+  node [shape=circle, fontsize=10, style=filled, fontname="Arial"];
+  edge [fontsize=8, fontname="Arial"];
+
+  subgraph cluster_0 {
+    label="sink";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "sink" [fillcolor=lightblue];
+  }
+
+  subgraph cluster_1 {
+    label="drive";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "drive||ok" [fillcolor=lightblue];
+  }
+
+  subgraph cluster_2 {
+    label="coast";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "coast||ok" [fillcolor=lightblue];
+  }
+
+  subgraph cluster_3 {
+    label="stopped";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "stopped||ok" [fillcolor=lightblue];
+  }
+
+  subgraph cluster_4 {
+    label="emergency_brake";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "emergency_brake||ok" [fillcolor=lightblue];
+  }
+
+  subgraph cluster_5 {
+    label="brake";
+    style=dashed;
+    color=gray;
+    fontcolor=black;
+    "brake||ok" [fillcolor=lightblue];
+  }
+
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "drive||ok" [label="obstacle_class=0..."];
+  "drive||ok" -> "coast||ok" [label="obstacle_class=1..."];
+  "coast||ok" -> "coast||ok" [label="obstacle_class=1..."];
+  "coast||ok" -> "coast||ok" [label="obstacle_class=1..."];
+  "coast||ok" -> "coast||ok" [label="obstacle_class=1..."];
+  "coast||ok" -> "brake||ok" [label="obstacle_class=1..."];
+  "brake||ok" -> "brake||ok" [label="obstacle_class=1..."];
+  "brake||ok" -> "brake||ok" [label="obstacle_class=1..."];
+  "brake||ok" -> "emergency_brake||ok" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "emergency_brake||ok" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "stopped||ok" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "drive||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=0..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "coast||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=0..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "stopped||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "emergency_brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+  "brake||ok" -> "sink" [label="obstacle_class=0..."];
+  "brake||ok" -> "sink" [label="obstacle_class=1..."];
+}
